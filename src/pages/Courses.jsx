@@ -17,6 +17,7 @@ export default function Courses() {
     : programs.filter((p) => p.category === activeFilter);
 
   return (
+    <div className="container my-5">
     <div className="courses-page animate__animated animate__fadeIn">
       {/* Hero Banner */}
       <section className="courses-hero p-4 p-md-5 mb-5 text-start position-relative overflow-hidden">
@@ -195,6 +196,7 @@ export default function Courses() {
           </div>
         </div>
       </section>
+    </div>
     </div>
   );
 }

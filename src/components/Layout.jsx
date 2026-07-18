@@ -109,7 +109,7 @@ export default function Layout() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-grow-1 flex-shrink-0 container my-5">
+      <main className="flex-grow-1 flex-shrink-0">
         <Outlet />
       </main>
 

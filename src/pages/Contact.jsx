@@ -74,6 +74,7 @@ export default function Contact() {
   };
 
   return (
+    <div className="container my-5">
     <div className="contact-page animate__animated animate__fadeIn">
       {/* Hero */}
       <section className="mb-5 pb-2">
@@ -289,6 +290,7 @@ export default function Contact() {
           </figcaption>
         </figure>
       </section>
+    </div>
     </div>
   );
 }

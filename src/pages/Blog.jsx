@@ -24,6 +24,7 @@ export default function Blog() {
   }, [searchQuery, activeTag]);
 
   return (
+    <div className="container my-5">
     <div className="blog-page">
       {/* Hero */}
       <section className="mb-5 pb-2">
@@ -204,5 +205,7 @@ export default function Blog() {
         </div>
       </section>
     </div>
+    </div>
   );
 }
+

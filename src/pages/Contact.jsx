@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 const campusInfo = [
   {
     id: 'address',
@@ -45,8 +47,34 @@ const campusInfo = [
 ];
 
 export default function Contact() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
+  const [status, setStatus] = useState('idle'); // idle | loading | success
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    // Map contact-name, contact-email, contact-subject, contact-message to state keys
+    const field = id.replace('contact-', '');
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setStatus('loading');
+    setTimeout(() => {
+      setStatus('success');
+    }, 1500);
+  };
+
   return (
-    <div className="contact-page">
+    <div className="contact-page animate__animated animate__fadeIn">
       {/* Hero */}
       <section className="mb-5 pb-2">
         <div className="row align-items-end">
@@ -59,7 +87,7 @@ export default function Contact() {
           </div>
           <div className="col-lg-4 mt-4 mt-lg-0">
             <div className="contact-response-pill rounded-4 p-3 p-md-4 text-center text-lg-end">
-              <span className="d-block fw-bold text-primary">~24 hrs</span>
+              <span className="d-block fw-bold text-primary fs-3">~24 hrs</span>
               <span className="text-muted small">Average response time</span>
             </div>
           </div>
@@ -72,72 +100,120 @@ export default function Contact() {
           <div className="col-lg-7">
             <div className="card border-0 shadow-sm bg-white contact-form-card rounded-4 overflow-hidden">
               <div className="card-body p-4 p-md-5">
-                <h2 className="h4 fw-bold text-dark mb-1">Send a Message</h2>
-                <p className="text-muted small mb-4">Fill out the form below and a member of our team will get back to you shortly.</p>
-
-                <form
-                  className="contact-form"
-                  onSubmit={(e) => e.preventDefault()}
-                  aria-label="Contact form"
-                >
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <label htmlFor="contact-name" className="form-label fw-semibold small">
-                        Full Name <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        id="contact-name"
-                        type="text"
-                        className="form-control form-control-lg contact-input"
-                        placeholder="Jane Doe"
-                        required
-                        autoComplete="name"
-                      />
+                {status === 'success' ? (
+                  <div className="text-center py-5 success-animation">
+                    <div className="d-inline-flex align-items-center justify-content-center bg-success-subtle text-success rounded-circle mb-4" style={{ width: '80px', height: '80px' }}>
+                      <svg width="40" height="40" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
                     </div>
-                    <div className="col-md-6">
-                      <label htmlFor="contact-email" className="form-label fw-semibold small">
-                        Email <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        id="contact-email"
-                        type="email"
-                        className="form-control form-control-lg contact-input"
-                        placeholder="jane@example.com"
-                        required
-                        autoComplete="email"
-                      />
-                    </div>
-                    <div className="col-12">
-                      <label htmlFor="contact-subject" className="form-label fw-semibold small">
-                        Subject <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        id="contact-subject"
-                        type="text"
-                        className="form-control form-control-lg contact-input"
-                        placeholder="Admissions inquiry, campus tour, etc."
-                        required
-                      />
-                    </div>
-                    <div className="col-12">
-                      <label htmlFor="contact-message" className="form-label fw-semibold small">
-                        Message <span className="text-danger">*</span>
-                      </label>
-                      <textarea
-                        id="contact-message"
-                        className="form-control contact-input contact-textarea"
-                        rows="5"
-                        placeholder="Tell us how we can help you..."
-                        required
-                      />
-                    </div>
-                    <div className="col-12 pt-2">
-                      <button type="submit" className="btn btn-primary btn-lg px-4">
-                        Send Message
-                      </button>
-                    </div>
+                    <h3 className="fw-bold text-dark mb-2">Message Sent!</h3>
+                    <p className="text-muted mx-auto mb-4" style={{ maxWidth: '420px', lineHeight: '1.6' }}>
+                      Thank you, <strong>{formData.name}</strong>. We have received your inquiry regarding <strong>&quot;{formData.subject}&quot;</strong>. A representative will contact you at <strong>{formData.email}</strong> shortly.
+                    </p>
+                    <button
+                      className="btn btn-outline-primary px-4 rounded-pill fw-semibold"
+                      onClick={() => {
+                        setFormData({ name: '', email: '', subject: '', message: '' });
+                        setStatus('idle');
+                      }}
+                    >
+                      Send Another Message
+                    </button>
                   </div>
-                </form>
+                ) : (
+                  <>
+                    <h2 className="h4 fw-bold text-dark mb-1">Send a Message</h2>
+                    <p className="text-muted small mb-4">Fill out the form below and a member of our team will get back to you shortly.</p>
+
+                    <form
+                      className="contact-form"
+                      onSubmit={handleSubmit}
+                      aria-label="Contact form"
+                    >
+                      <div className="row g-3">
+                        <div className="col-md-6">
+                          <label htmlFor="contact-name" className="form-label fw-semibold small">
+                            Full Name <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            id="contact-name"
+                            type="text"
+                            className="form-control form-control-lg contact-input"
+                            placeholder="Jane Doe"
+                            required
+                            autoComplete="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            disabled={status === 'loading'}
+                          />
+                        </div>
+                        <div className="col-md-6">
+                          <label htmlFor="contact-email" className="form-label fw-semibold small">
+                            Email <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            id="contact-email"
+                            type="email"
+                            className="form-control form-control-lg contact-input"
+                            placeholder="jane@example.com"
+                            required
+                            autoComplete="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            disabled={status === 'loading'}
+                          />
+                        </div>
+                        <div className="col-12">
+                          <label htmlFor="contact-subject" className="form-label fw-semibold small">
+                            Subject <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            id="contact-subject"
+                            type="text"
+                            className="form-control form-control-lg contact-input"
+                            placeholder="Admissions inquiry, campus tour, etc."
+                            required
+                            value={formData.subject}
+                            onChange={handleChange}
+                            disabled={status === 'loading'}
+                          />
+                        </div>
+                        <div className="col-12">
+                          <label htmlFor="contact-message" className="form-label fw-semibold small">
+                            Message <span className="text-danger">*</span>
+                          </label>
+                          <textarea
+                            id="contact-message"
+                            className="form-control contact-input contact-textarea"
+                            rows="5"
+                            placeholder="Tell us how we can help you..."
+                            required
+                            value={formData.message}
+                            onChange={handleChange}
+                            disabled={status === 'loading'}
+                          />
+                        </div>
+                        <div className="col-12 pt-2">
+                          <button
+                            type="submit"
+                            className="btn btn-primary btn-lg px-4 rounded-pill d-inline-flex align-items-center gap-2"
+                            disabled={status === 'loading'}
+                          >
+                            {status === 'loading' ? (
+                              <>
+                                <span className="loading-spinner"></span>
+                                Sending...
+                              </>
+                            ) : (
+                              'Send Message'
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -155,11 +231,11 @@ export default function Contact() {
                       <div>
                         <span className="d-block fw-semibold text-dark small mb-1">{item.label}</span>
                         {item.href ? (
-                          <a href={item.href} className="text-muted small contact-info-link">
+                          <a href={item.href} className="text-muted small contact-info-link fw-medium">
                             {item.value}
                           </a>
                         ) : (
-                          <span className="text-muted small contact-info-text" style={{ whiteSpace: 'pre-line' }}>
+                          <span className="text-muted small contact-info-text d-block lh-base" style={{ whiteSpace: 'pre-line' }}>
                             {item.value}
                           </span>
                         )}
@@ -168,10 +244,10 @@ export default function Contact() {
                   ))}
                 </ul>
 
-                <div className="contact-info-note rounded-3 p-3 mt-2">
+                <div className="contact-info-note rounded-3 p-3 mt-4">
                   <p className="text-muted small mb-0" style={{ lineHeight: '1.6' }}>
                     For urgent matters outside office hours, please call our 24/7 campus security line at{' '}
-                    <a href="tel:+15550192835" className="contact-info-link">
+                    <a href="tel:+15550192835" className="contact-info-link fw-semibold text-primary">
                       +1 (555) 019-2835
                     </a>
                     .
@@ -183,26 +259,32 @@ export default function Contact() {
         </div>
       </section>
 
-      {/* Map Placeholder */}
+      {/* Map Placeholder with Campus Map Image and Hover Overlay */}
       <section className="mb-2">
         <figure className="contact-map-wrapper rounded-4 overflow-hidden shadow-sm border mb-0">
-          <div
-            className="contact-map-placeholder d-flex flex-column align-items-center justify-content-center text-center p-4"
-            role="img"
-            aria-label="Map placeholder showing Tech University campus location"
-          >
-            <div className="contact-map-pin mb-3">
-              <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+          <div className="contact-map-image-container">
+            <div className="contact-map-overlay text-white text-center p-4">
+              <div className="contact-map-pin mb-3">
+                <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <h4 className="fw-bold mb-1">Tech University Campus</h4>
+              <p className="small mb-3 text-white-50">100 Innovation Way, Tech City, TC 94025</p>
+              <a
+                href="https://maps.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-light btn-sm px-4 rounded-pill fw-semibold text-primary shadow-sm hover-card"
+              >
+                Get Directions
+              </a>
             </div>
-            <span className="fw-semibold text-dark mb-1">Tech University Campus</span>
-            <span className="text-muted small">100 Innovation Way, Tech City, TC 94025</span>
           </div>
           <figcaption className="contact-map-caption text-center py-3 px-4 bg-white border-top">
             <span className="text-muted small">
-              Interactive campus map coming soon. Use the address above for navigation via your preferred maps app.
+              Campus Map illustration. Hover and click &quot;Get Directions&quot; to open your maps application.
             </span>
           </figcaption>
         </figure>

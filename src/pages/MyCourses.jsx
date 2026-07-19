@@ -116,12 +116,6 @@ export default function MyCourses() {
           <h1 className="mc-page-title">My Courses</h1>
           <p className="mc-page-sub">Manage and track all your enrolled courses in one place.</p>
         </div>
-        <button className="mc-enrol-btn">
-          <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
-          </svg>
-          Enrol in Course
-        </button>
       </div>
 
       {/* ── Summary bar ── */}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, Link, Outlet } from 'react-router-dom';
 
 export default function Layout() {
@@ -12,101 +12,153 @@ export default function Layout() {
     setIsOpen(false);
   };
 
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // Close mobile drawer on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        closeNavbar();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const navLinks = [
+    { to: '/', label: 'Home', end: true },
+    { to: '/about', label: 'About' },
+    { to: '/courses', label: 'Courses' },
+    { to: '/blog', label: 'Blog' },
+    { to: '/contact', label: 'Contact' },
+  ];
+
   return (
     <div className="d-flex flex-column min-vh-100">
       {/* Header / Navbar */}
-      <header>
-        <nav className="navbar navbar-expand-lg navbar-light bg-white sticky-top">
-          <div className="container">
-            {/* Logo */}
-            <Link className="navbar-brand fw-bold fs-4" to="/" onClick={closeNavbar}>
-              <span style={{ color: 'var(--brand-color)' }}>Tech</span>University
-            </Link>
+      <header className="nv-header-wrapper">
+        <div className="nv-container">
+          {/* Logo */}
+          <Link className="nv-logo" to="/" onClick={closeNavbar}>
+            <span className="nv-logo-accent">Tech</span>University
+          </Link>
 
-            {/* Hamburger button */}
-            <button
-              className="navbar-toggler"
-              type="button"
-              onClick={toggleNavbar}
-              aria-controls="navbarNav"
-              aria-expanded={isOpen}
-              aria-label="Toggle navigation"
-            >
-              <span className="navbar-toggler-icon"></span>
-            </button>
+          {/* Desktop Navigation Links */}
+          <nav className="nv-nav" aria-label="Main Navigation">
+            <ul className="nv-menu">
+              {navLinks.map((link) => (
+                <li className="nv-item" key={link.to}>
+                  <NavLink
+                    className={({ isActive }) => `nv-link ${isActive ? 'nv-link--active' : ''}`}
+                    to={link.to}
+                    end={link.end}
+                  >
+                    {link.label}
+                    <span className="nv-link-indicator" />
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-            {/* Navbar Links */}
-            <div className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`} id="navbarNav">
-              <ul className="navbar-nav mx-auto mb-2 mb-lg-0">
-                <li className="nav-item">
-                  <NavLink
-                    className={({ isActive }) => `nav-link ${isActive ? 'active-link' : ''}`}
-                    to="/"
-                    onClick={closeNavbar}
-                    end
-                  >
-                    Home
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    className={({ isActive }) => `nav-link ${isActive ? 'active-link' : ''}`}
-                    to="/about"
-                    onClick={closeNavbar}
-                  >
-                    About
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    className={({ isActive }) => `nav-link ${isActive ? 'active-link' : ''}`}
-                    to="/courses"
-                    onClick={closeNavbar}
-                  >
-                    Courses
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    className={({ isActive }) => `nav-link ${isActive ? 'active-link' : ''}`}
-                    to="/blog"
-                    onClick={closeNavbar}
-                  >
-                    Blog
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    className={({ isActive }) => `nav-link ${isActive ? 'active-link' : ''}`}
-                    to="/contact"
-                    onClick={closeNavbar}
-                  >
-                    Contact
-                  </NavLink>
-                </li>
-              </ul>
-
-              {/* Login and Register Buttons */}
-              <div className="d-flex align-items-center gap-2">
-                <NavLink
-                  className="btn btn-login"
-                  to="/login"
-                  onClick={closeNavbar}
-                >
-                  Login
-                </NavLink>
-                <NavLink
-                  className="btn btn-register text-white"
-                  to="/register"
-                  onClick={closeNavbar}
-                >
-                  Register
-                </NavLink>
-              </div>
-            </div>
+          {/* Desktop Action Buttons */}
+          <div className="nv-actions">
+            <NavLink className="nv-btn nv-btn-login" to="/login">
+              Login
+            </NavLink>
+            <NavLink className="nv-btn nv-btn-register" to="/register">
+              Register
+            </NavLink>
           </div>
-        </nav>
+
+          {/* Hamburger Menu Toggle (Mobile) */}
+          <button
+            className={`nv-mobile-toggle ${isOpen ? 'nv-mobile-toggle--open' : ''}`}
+            type="button"
+            onClick={toggleNavbar}
+            aria-expanded={isOpen}
+            aria-label="Toggle navigation menu"
+          >
+            <span className="nv-toggle-bar nv-toggle-bar-1"></span>
+            <span className="nv-toggle-bar nv-toggle-bar-2"></span>
+            <span className="nv-toggle-bar nv-toggle-bar-3"></span>
+          </button>
+        </div>
       </header>
+
+      {/* Mobile slide-in navigation drawer overlay */}
+      <div
+        className={`nv-drawer-overlay ${isOpen ? 'nv-drawer-overlay--open' : ''}`}
+        onClick={closeNavbar}
+        aria-hidden="true"
+      />
+
+      {/* Mobile Drawer */}
+      <div
+        className={`nv-drawer ${isOpen ? 'nv-drawer--open' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile Navigation Menu"
+      >
+        <div className="nv-drawer-header">
+          <Link className="nv-logo" to="/" onClick={closeNavbar}>
+            <span className="nv-logo-accent">Tech</span>University
+          </Link>
+          <button
+            className="nv-drawer-close"
+            type="button"
+            onClick={closeNavbar}
+            aria-label="Close menu"
+          >
+            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <nav className="nv-drawer-nav" aria-label="Mobile Menu Links">
+          <ul className="nv-drawer-menu">
+            {navLinks.map((link) => (
+              <li className="nv-drawer-item" key={link.to}>
+                <NavLink
+                  className={({ isActive }) => `nv-drawer-link ${isActive ? 'nv-drawer-link--active' : ''}`}
+                  to={link.to}
+                  onClick={closeNavbar}
+                  end={link.end}
+                >
+                  {link.label}
+                  <svg className="nv-drawer-link-arrow" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="nv-drawer-actions">
+          <NavLink className="nv-drawer-btn nv-drawer-btn-login" to="/login" onClick={closeNavbar}>
+            Login
+          </NavLink>
+          <NavLink className="nv-drawer-btn nv-drawer-btn-register" to="/register" onClick={closeNavbar}>
+            Register
+          </NavLink>
+        </div>
+      </div>
 
       {/* Main Content Area */}
       <main className="flex-grow-1 flex-shrink-0">

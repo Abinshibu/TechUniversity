@@ -10,6 +10,10 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import MyCourses from './pages/MyCourses';
+import Assignments from './pages/Assignments';
+import Grades from './pages/Grades';
+import Profile from './pages/Profile';
+import Settings from './pages/Settings';
 
 const router = createBrowserRouter([
   // ── Public site (navbar + footer) ──────────────────────────────────────
@@ -34,13 +38,13 @@ const router = createBrowserRouter([
     children: [
       { index: true,               element: <Dashboard /> },
       { path: 'courses',           element: <MyCourses /> },
-      { path: 'assignments',       element: <ComingSoon title="Assignments" /> },
-      { path: 'grades',            element: <ComingSoon title="Grades" /> },
+      { path: 'assignments',       element: <Assignments /> },
+      { path: 'grades',            element: <Grades /> },
       { path: 'schedule',          element: <ComingSoon title="Schedule" /> },
       { path: 'library',           element: <ComingSoon title="Library" /> },
       { path: 'messages',          element: <ComingSoon title="Messages" /> },
-      { path: 'profile',           element: <ComingSoon title="Profile" /> },
-      { path: 'settings',          element: <ComingSoon title="Settings" /> },
+      { path: 'profile',           element: <Profile /> },
+      { path: 'settings',          element: <Settings /> },
     ],
   },
 ]);

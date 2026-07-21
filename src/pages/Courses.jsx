@@ -1,202 +1,464 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  BrainCircuit,
+  CalendarRange,
+  ChevronRight,
+  Compass,
+  DollarSign,
+  GraduationCap,
+  Lock,
+  PlayCircle,
+  Rocket,
+  Search,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sparkles,
+  Star,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 import { programs } from '../data/programs';
+
+const categoryFilters = ['all', 'software-engineering', 'data-science', 'cyber-security'];
+
+const partnerLogos = ['OpenAI', 'Stripe', 'Vercel', 'Notion', 'Linear', 'Google'];
+
+const premiumStats = [
+  { value: 97, suffix: '%', label: 'placement rate' },
+  { value: 18, suffix: 'k+', label: 'industry mentors' },
+  { value: 4.9, suffix: '/5', label: 'student satisfaction' },
+  { value: 6, suffix: ' weeks', label: 'to first internship' },
+];
+
+const outcomeTimeline = [
+  { title: 'Launch your foundation', text: 'Hands-on projects begin in the first term with mentorship from product and research teams.' },
+  { title: 'Shape your niche', text: 'Specialized studio work introduces you to AI, platform, security, and cloud systems.' },
+  { title: 'Step into the market', text: 'Capstones and employer-led workshops prepare you for high-impact internships and roles.' },
+];
+
+const studentStories = [
+  {
+    quote: 'The studio-based experience felt like joining a world-class product team, not a traditional university class.',
+    name: 'Mina Patel',
+    role: 'ML Engineer @ Anthropic',
+  },
+  {
+    quote: 'The faculty access and career support helped me turn my capstone into a full-time role before graduation.',
+    name: 'Daniel Ruiz',
+    role: 'Security Analyst @ Stripe',
+  },
+];
+
+function AnimatedCounter({ value, suffix = '' }) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    let frameId;
+    const duration = 1200;
+    const startTime = performance.now();
+
+    const tick = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      setDisplayValue(Math.round(progress * value));
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(tick);
+      }
+    };
+
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, [value]);
+
+  return <span>{displayValue}{suffix}</span>;
+}
 
 export default function Courses() {
   const [activeFilter, setActiveFilter] = useState('all');
-  const [expandedCurriculum, setExpandedCurriculum] = useState({});
+  const [search, setSearch] = useState('');
 
-  const toggleCurriculum = (id) => {
-    setExpandedCurriculum((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
+  const enrichedPrograms = useMemo(
+    () =>
+      programs.map((program, index) => {
+        const profileMap = {
+          se: {
+            badge: 'AI-first product engineering',
+            skills: ['Cloud', 'Systems Design', 'Product Thinking'],
+            placement: '96%',
+            salary: '$108k',
+            rating: '4.9',
+            faculty: 'Dr. Maya Chen',
+            facultyRole: 'Principal Engineer',
+            accent: 'course-card--sky',
+          },
+          ds: {
+            badge: 'Research + applied ML',
+            skills: ['Statistics', 'Deep Learning', 'Analytics'],
+            placement: '98%',
+            salary: '$112k',
+            rating: '4.95',
+            faculty: 'Prof. Aisha Quinn',
+            facultyRole: 'Applied AI Lead',
+            accent: 'course-card--violet',
+          },
+          cs: {
+            badge: 'Security at scale',
+            skills: ['Cloud Security', 'Threat Modeling', 'Forensics'],
+            placement: '99%',
+            salary: '$120k',
+            rating: '4.97',
+            faculty: 'Dr. Noah Ortiz',
+            facultyRole: 'Head of Security',
+            accent: 'course-card--emerald',
+          },
+        };
 
-  const filteredPrograms = activeFilter === 'all'
-    ? programs
-    : programs.filter((p) => p.category === activeFilter);
+        const profile = profileMap[program.id] ?? {
+          badge: 'Emerging discipline',
+          skills: ['Leadership', 'Strategy', 'Innovation'],
+          placement: '95%',
+          salary: '$100k',
+          rating: '4.8',
+          faculty: 'Prof. Jordan Lee',
+          facultyRole: 'Faculty Lead',
+          accent: 'course-card--neutral',
+        };
+
+        return {
+          ...program,
+          index,
+          badge: profile.badge,
+          skills: profile.skills,
+          placement: profile.placement,
+          salary: profile.salary,
+          rating: profile.rating,
+          faculty: profile.faculty,
+          facultyRole: profile.facultyRole,
+          accent: profile.accent,
+        };
+      }),
+    [],
+  );
+
+  const filteredPrograms = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    return enrichedPrograms.filter((program) => {
+      const matchesCategory = activeFilter === 'all' || program.category === activeFilter;
+      const searchableText = `${program.title} ${program.degree} ${program.skills.join(' ')} ${program.faculty}`.toLowerCase();
+      const matchesSearch = !query || searchableText.includes(query);
+      return matchesCategory && matchesSearch;
+    });
+  }, [activeFilter, enrichedPrograms, search]);
 
   return (
-    <div className="container my-5">
-    <div className="courses-page animate__animated animate__fadeIn">
-      {/* Hero Banner */}
-      <section className="courses-hero p-4 p-md-5 mb-5 text-start position-relative overflow-hidden">
-        <div className="row align-items-center">
-          <div className="col-lg-8">
-            <span className="text-primary text-uppercase fw-bold small tracking-wider">Academic Programs</span>
-            <h1 className="display-4 fw-extrabold text-dark mt-2 mb-3">Our Undergraduate Courses</h1>
-            <p className="lead text-muted mb-0" style={{ lineHeight: '1.7', maxWidth: '640px' }}>
-              Explore our core STEM pathways designed to launch successful careers in engineering, artificial intelligence, and network infrastructure safety. 
+    <div className="courses-page">
+      <div className="courses-shell">
+        <motion.section
+          className="courses-hero"
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="courses-hero__content">
+            <div className="courses-hero__badge">
+              <Sparkles size={16} />
+              <span>New • premium admissions experience • 2.1k scholars enrolled</span>
+            </div>
+            <h1>Build a future in technology with programs shaped for global impact.</h1>
+            <p>
+              Discover immersive degree pathways that blend elite faculty, live industry projects, and career outcomes that feel more like a venture-backed launchpad than a traditional campus catalog.
             </p>
-          </div>
-          <div className="col-lg-4 mt-4 mt-lg-0 text-lg-end">
-            <div className="d-inline-flex flex-column gap-2 bg-white rounded-4 p-4 shadow-sm border text-center">
-              <span className="h2 fw-extrabold text-primary mb-0">100%</span>
-              <span className="text-muted small fw-medium">Project-Based Learning Curriculum</span>
+            <div className="courses-hero__actions">
+              <a href="#catalog" className="courses-hero__button courses-hero__button--primary">
+                Explore programs
+                <ArrowRight size={18} />
+              </a>
+              <a href="/contact" className="courses-hero__button courses-hero__button--secondary">
+                Book a strategy call
+              </a>
+            </div>
+            <div className="courses-hero__mini-stats">
+              <div>
+                <strong><AnimatedCounter value={97} suffix="%" /></strong>
+                <span>Placement rate</span>
+              </div>
+              <div>
+                <strong><AnimatedCounter value={4} suffix="x" /></strong>
+                <span>More internships</span>
+              </div>
+              <div>
+                <strong><AnimatedCounter value={180} /></strong>
+                <span>Global partners</span>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Program Filtering Controls */}
-      <section className="mb-4">
-        <div className="d-flex flex-wrap gap-2 justify-content-start align-items-center">
-          <button
-            className={`course-filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('all')}
+          <motion.div
+            className="courses-hero__visual"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.55, delay: 0.1 }}
           >
-            All Programs
-          </button>
-          <button
-            className={`course-filter-btn ${activeFilter === 'software-engineering' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('software-engineering')}
-          >
-            Software Engineering
-          </button>
-          <button
-            className={`course-filter-btn ${activeFilter === 'data-science' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('data-science')}
-          >
-            Data Science & AI
-          </button>
-          <button
-            className={`course-filter-btn ${activeFilter === 'cyber-security' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('cyber-security')}
-          >
-            Cyber Security
-          </button>
-        </div>
-      </section>
-
-      {/* Program Cards Grid */}
-      <section className="mb-5">
-        <div className="row g-4">
-          {filteredPrograms.map((program) => {
-            const isExpanded = expandedCurriculum[program.id];
-            return (
-              <div key={program.id} className="col-12">
-                <div className={`card bg-white course-card ${program.accentClass} shadow-sm border-0`}>
-                  <div className="card-body p-4 p-md-5">
-                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-                      <div className="d-flex align-items-center gap-3">
-                        <div className="icon-badge bg-primary-subtle text-primary rounded-3 m-0 d-flex align-items-center justify-content-center" style={{ width: '56px', height: '56px' }}>
-                          {program.icon}
-                        </div>
-                        <div>
-                          <h2 className="h3 fw-bold mb-1 text-dark">{program.title}</h2>
-                          <span className="text-muted small fw-semibold d-block">{program.degree}</span>
-                        </div>
-                      </div>
-                      <div className="d-flex flex-wrap gap-2">
-                        <span className="course-stat-badge">
-                          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          {program.duration}
-                        </span>
-                        <span className="course-stat-badge">
-                          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          {program.credits}
-                        </span>
-                        <span className="course-stat-badge bg-success-subtle text-success">
-                          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          {program.rate}
-                        </span>
-                      </div>
-                    </div>
-
-                    <p className="text-muted mb-4" style={{ lineHeight: '1.7', fontSize: '1.02rem', maxWidth: '880px' }}>
-                      {program.description}
-                    </p>
-
-                    <div className="d-flex gap-3">
-                      <button
-                        className="btn btn-primary px-4 rounded-pill fw-semibold shadow-sm"
-                        onClick={() => alert(`Registration details for B.S. in ${program.title} will be sent to your student dashboard.`)}
-                      >
-                        Enroll Now
-                      </button>
-                      <button
-                        className={`btn ${isExpanded ? 'btn-secondary' : 'btn-outline-secondary'} px-4 rounded-pill fw-semibold d-inline-flex align-items-center gap-2`}
-                        onClick={() => toggleCurriculum(program.id)}
-                      >
-                        {isExpanded ? 'Hide Curriculum' : 'Preview Curriculum'}
-                        <svg
-                          width="16"
-                          height="16"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                          style={{
-                            transform: isExpanded ? 'rotate(180deg)' : 'none',
-                            transition: 'transform 0.2s ease',
-                          }}
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                    </div>
-
-                    {/* Interactive Curriculum Expander */}
-                    {isExpanded && (
-                      <div className="course-modules-section mt-5 pt-4">
-                        <h4 className="fw-bold mb-4 text-dark fs-5">Core Course Modules</h4>
-                        <div className="row g-4">
-                          {program.curriculum.map((sem, idx) => (
-                            <div key={idx} className="col-lg-4">
-                              <div className="bg-light p-3 rounded-4 h-100 border">
-                                <span className="d-block fw-bold text-dark small mb-3 text-uppercase tracking-wider">
-                                  {sem.semester}
-                                </span>
-                                <div className="d-flex flex-column gap-2">
-                                  {sem.courses.map((course, cIdx) => (
-                                    <div key={cIdx} className={`course-module-item ${program.moduleBorderClass}`}>
-                                      {course}
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+            <div className="courses-hero__cluster">
+              <div className="courses-hero__panel">
+                <div className="courses-hero__panel-top">
+                  <div className="courses-hero__panel-label">
+                    <Compass size={16} />
+                    <span>Career velocity</span>
+                  </div>
+                  <span className="courses-hero__panel-score">+21%</span>
+                </div>
+                <div className="courses-hero__panel-metrics">
+                  <div>
+                    <strong>6 weeks</strong>
+                    <span>to first offer</span>
+                  </div>
+                  <div>
+                    <strong>$112k</strong>
+                    <span>avg. starting salary</span>
                   </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </section>
+              <div className="courses-hero__floating courses-hero__floating--top">
+                <GraduationCap size={18} />
+                <span>Industry-led studios</span>
+              </div>
+              <div className="courses-hero__floating courses-hero__floating--bottom">
+                <ShieldCheck size={18} />
+                <span>Trusted by 180+ partners</span>
+              </div>
+            </div>
+          </motion.div>
+        </motion.section>
 
-      {/* Admissions Call to Action */}
-      <section className="mb-2">
-        <div className="card text-center p-5 course-cta-card shadow text-white">
-          <div className="card-body position-relative z-1 py-4">
-            <h2 className="display-6 fw-extrabold mb-3">Ready to Launch Your Career?</h2>
-            <p className="text-white-50 mx-auto mb-4" style={{ maxWidth: '580px', lineHeight: '1.6' }}>
-              Admissions are now open for the upcoming academic semester. Download the syllabus overview or reach out to our counselors to plan your program.
-            </p>
-            <div className="d-flex justify-content-center gap-3 flex-wrap">
-              <a href="/contact" className="btn btn-primary btn-lg px-4 rounded-pill fw-semibold shadow hover-card">
-                Contact Counselor
-              </a>
-              <button
-                className="btn btn-outline-light btn-lg px-4 rounded-pill fw-semibold"
-                onClick={() => alert('Syllabus PDF bundle download started.')}
+        <motion.section
+          className="courses-toolbar"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.4 }}
+        >
+          <label className="courses-toolbar__search" htmlFor="program-search">
+            <Search size={18} />
+            <input
+              id="program-search"
+              type="search"
+              placeholder="Search programs, skills, or faculty"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </label>
+
+          <div className="courses-toolbar__filters" role="tablist" aria-label="Program categories">
+            <div className="courses-toolbar__filters-title">
+              <SlidersHorizontal size={16} />
+              <span>Filter</span>
+            </div>
+            {categoryFilters.map((filter) => {
+              const label = filter === 'all' ? 'All programs' : filter.replace('-', ' ');
+              return (
+                <button
+                  key={filter}
+                  className={`courses-chip ${activeFilter === filter ? 'courses-chip--active' : ''}`}
+                  onClick={() => setActiveFilter(filter)}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </motion.section>
+
+        <section className="courses-partners" aria-label="Industry partners">
+          <p>Trusted by ambitious teams from</p>
+          <div className="courses-partners__logos">
+            {partnerLogos.map((partner) => (
+              <div key={partner} className="courses-partner-pill">
+                {partner}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="courses-grid-section" id="catalog">
+          <div className="courses-section-heading">
+            <div>
+              <span className="courses-eyebrow">Curated pathways</span>
+              <h2>Programs built for modern builders and future founders.</h2>
+            </div>
+            <p>Each pathway pairs elite academics with applied delivery, giving students the depth to thrive and the momentum to launch quickly.</p>
+          </div>
+
+          <div className="courses-grid">
+            {filteredPrograms.map((program, index) => (
+              <motion.article
+                key={program.id}
+                className={`course-card ${program.accent}`}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.35, delay: index * 0.05 }}
+                whileHover={{ y: -8, scale: 1.01 }}
               >
-                Download Syllabus (.PDF)
-              </button>
+                <div className="course-card__top">
+                  <div className="course-card__icon">
+                    {program.icon}
+                  </div>
+                  <span className="course-card__badge">{program.badge}</span>
+                </div>
+
+                <div className="course-card__content">
+                  <div className="course-card__headline">
+                    <h3>{program.title}</h3>
+                    <p>{program.degree}</p>
+                  </div>
+
+                  <div className="course-card__metrics">
+                    <div>
+                      <CalendarRange size={14} />
+                      <span>{program.duration}</span>
+                    </div>
+                    <div>
+                      <GraduationCap size={14} />
+                      <span>{program.credits}</span>
+                    </div>
+                    <div>
+                      <BriefcaseBusiness size={14} />
+                      <span>{program.placement} placement</span>
+                    </div>
+                  </div>
+
+                  <p className="course-card__description">{program.description}</p>
+
+                  <div className="course-card__tags">
+                    {program.skills.map((skill) => (
+                      <span key={skill} className="course-card__tag">{skill}</span>
+                    ))}
+                  </div>
+
+                  <div className="course-card__faculty">
+                    <div className="course-card__avatar">{program.faculty.split(' ').map((item) => item[0]).join('').slice(0, 2)}</div>
+                    <div>
+                      <strong>{program.faculty}</strong>
+                      <span>{program.facultyRole}</span>
+                    </div>
+                  </div>
+
+                  <div className="course-card__footer">
+                    <div className="course-card__footer-stats">
+                      <div>
+                        <DollarSign size={15} />
+                        <span>{program.salary}</span>
+                      </div>
+                      <div>
+                        <Star size={15} />
+                        <span>{program.rating}</span>
+                      </div>
+                    </div>
+                    <div className="course-card__actions">
+                      <button type="button" className="course-card__button course-card__button--primary">
+                        Enroll now
+                      </button>
+                      <button type="button" className="course-card__button course-card__button--ghost">
+                        View outline
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+
+          {filteredPrograms.length === 0 && (
+            <div className="courses-empty-state">
+              <p>No programs match that search yet. Try a broader keyword or switch filters.</p>
+            </div>
+          )}
+        </section>
+
+        <section className="courses-showcase">
+          <div className="courses-showcase__stories">
+            <div className="courses-section-heading courses-section-heading--tight">
+              <div>
+                <span className="courses-eyebrow">Student outcomes</span>
+                <h2>Stories from graduates who moved fast after campus.</h2>
+              </div>
+            </div>
+            <div className="courses-story-list">
+              {studentStories.map((story) => (
+                <div key={story.name} className="courses-story-card">
+                  <p>“{story.quote}”</p>
+                  <div>
+                    <strong>{story.name}</strong>
+                    <span>{story.role}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
-    </div>
+
+          <div className="courses-timeline">
+            <div className="courses-section-heading courses-section-heading--tight">
+              <div>
+                <span className="courses-eyebrow">Career path</span>
+                <h2>From launch to leadership in three clear stages.</h2>
+              </div>
+            </div>
+            <div className="courses-timeline__items">
+              {outcomeTimeline.map((item, index) => (
+                <div key={item.title} className="courses-timeline__item">
+                  <div className="courses-timeline__index">0{index + 1}</div>
+                  <div>
+                    <h3>{item.title}</h3>
+                    <p>{item.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="courses-stats" aria-label="Program highlights">
+          {premiumStats.map((item) => (
+            <div key={item.label} className="courses-stat-card">
+              <strong><AnimatedCounter value={item.value} suffix={item.suffix} /></strong>
+              <span>{item.label}</span>
+            </div>
+          ))}
+        </section>
+
+        <motion.section
+          className="courses-cta"
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="courses-cta__content">
+            <div className="courses-cta__eyebrow">
+              <Rocket size={18} />
+              <span>Next intake opens this fall</span>
+            </div>
+            <h2>Ready to shape your future with a premium university experience?</h2>
+            <p>Meet our admissions team and receive tailored guidance for your next chapter.</p>
+            <div className="courses-cta__actions">
+              <a href="/contact" className="courses-hero__button courses-hero__button--primary">
+                Apply now
+                <ArrowRight size={18} />
+              </a>
+              <a href="#catalog" className="courses-hero__button courses-hero__button--secondary">
+                View highlights
+              </a>
+            </div>
+          </div>
+          <div className="courses-cta__orb" />
+          <div className="courses-cta__orb courses-cta__orb--secondary" />
+        </motion.section>
+      </div>
     </div>
   );
 }
